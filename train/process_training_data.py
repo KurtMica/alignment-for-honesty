@@ -52,6 +52,14 @@ A: """,
 "I'm absolutely certain that ",]},
 ]
 
+prompt_id_map = {
+    SFTMethod.SFT_BASELINE: 0,
+    SFTMethod.ABSOLUTE: 1,
+    SFTMethod.CONFIDENCE_NUM: 2,
+    SFTMethod.CONFIDENCE_VERB: 3,
+    SFTMethod.MULTISAMPLE: 3,
+}
+
 
 @dataclass
 class DataArguments:
@@ -65,6 +73,10 @@ class DataArguments:
     data_max_length: int = field(default=1024)
     refresh: bool = field(default=False, metadata={"help": "Whether to refresh the data."})
 
+    def __post_init__(self):
+        if isinstance(self.sft_method, str):
+            self.sft_method = SFTMethod(self.sft_method)
+
 
 class MyDataset(Dataset):
     def __init__(self, data_args, split):
@@ -74,7 +86,7 @@ class MyDataset(Dataset):
         self.sft_method = data_args.sft_method
         self.prompt_id = data_args.prompt_id
 
-        data_tag = data_args.sft_method
+        data_tag = data_args.sft_method.value
         if data_args.prompt_id != 0:
             data_tag += f'_p{data_args.prompt_id}'
 
@@ -247,8 +259,7 @@ class MyDataset(Dataset):
 
 if __name__ == '__main__':
     parser = HfArgumentParser((DataArguments))
-    data_args = parser.parse_args_into_dataclasses()
-    data_args.prompt_id = 1
-    data_args.train_data_path = ''
+    data_args = parser.parse_args_into_dataclasses()[0]
+    data_args.prompt_id = prompt_id_map[data_args.sft_method]
 
     train_dataset = MyDataset(data_args, split='train')
