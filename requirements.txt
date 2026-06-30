@@ -1,0 +1,5 @@
+git+https://github.com/OpenLMLab/collie.git
+transformers==4.44.2  # CoLLiE 1.0.7 uses dtype_byte_size, removed in transformers 5.x
+sentencepiece         # LLaMA-2 tokenizer
+deepspeed
+flash-attn
